@@ -1,7 +1,6 @@
 import React from 'react';
 import { Input, Button } from "./../../components";
 import { Flex, Box } from "@rebass/grid";
-import styled from "styled-components";
 import Resume from '../Resume';
 
 class Home extends React.Component {

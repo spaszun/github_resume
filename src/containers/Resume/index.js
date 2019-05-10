@@ -1,9 +1,6 @@
 import React from 'react';
 import { Flex, Box } from "@rebass/grid";
-import axios from "axios";
-import _ from "lodash";
-
-const API = 'https://api.github.com'
+import { fetchRepositoriesAndLanguages, fetchContributions, fetchUser, fetchOrgs } from "../../service/service"
 
 class Resume extends React.Component {
 
@@ -26,10 +23,9 @@ class Resume extends React.Component {
       componentDidMount() {
         this.setState({ isLoading: true });
         const { githubNick } = this.props;
-        axios.get(`${API}/users/${githubNick}`)
-          .then(result => { 
+        fetchUser(githubNick).then(result => { 
               this.setState({
-                user: result.data,
+                user: result,
                 isLoading: false
           })})
           .catch(error => this.setState({
@@ -37,13 +33,8 @@ class Resume extends React.Component {
             isLoading: false
           }));
 
-          const thisYear = new Date().getFullYear();
-          axios.get(`${API}/users/${githubNick}/orgs`)
-          .then(result => this.setState({
-            organizations: result.data.filter(org => org.login).map(o => ({
-                name: o.name || o.login,
-                now: thisYear
-            })),
+        fetchOrgs(githubNick).then(organizations => this.setState({
+            organizations,
             isLoading: false
           }))
           .catch(error => this.setState({
@@ -51,121 +42,41 @@ class Resume extends React.Component {
             isLoading: false
           }));
 
-          this.loadRepositories(githubNick);
+          this.loadRepositoriesAndLanguages(githubNick);
           this.loadContributions(githubNick);
       }
 
-    getLanguagesInfo(repositories) {
-        const repos = repositories.filter(r => r.language);
-        const languagesByOcurrence = _.countBy(repos, 'language');
-        const languages = Object.keys(languagesByOcurrence).reduce(
-            (agg, language) => {
-                const popularity = languagesByOcurrence[language]
-                return agg.concat({
-                    language, 
-                    popularity,
-                    percentage: parseInt((popularity / repos.length ) * 100)
-                })
-        }, []);
-        console.log('languages', languagesByOcurrence);
-        languages.sort((a, b) => b.popularity - a.popularity);
-        return languages;
-    }
-
-    loadRepositories(githubNick) {
+    loadRepositoriesAndLanguages(githubNick) {
         this.setState({ isLoadingRepos: true });
-        const processor = result => result.map(repo => ({
-            language: repo.language,
-            popularity: repo.watchers + repo.forks,
-            name: repo.name,
-            since: new Date(repo.created_at).getFullYear(),
-            until: new Date(repo.pushed_at).getFullYear(),
-            description: repo.description,
-            homepage: repo.homepage,
-            watchers: repo.watchers,
-            forks: repo.forks,
-            fork: repo.fork,
-        }));
-
-        this.loadAllFromPagedResource(`${API}/users/${githubNick}/repos`, processor).then((repoData) => {
-            console.log('loadAllFromPagedResource ', repoData);
-            const repos = repoData.filter(repo => repo.fork === false);
-            const maxLanguages = 9;
-            const maxRepos = 5;
-            const languages = this.getLanguagesInfo(repos, maxLanguages);
-            repos.sort((a, b) => b.popularity - a.popularity );
-            console.log('languages', languages);
-            console.log(repos);
+        fetchRepositoriesAndLanguages(githubNick).then(([languages, repos]) => {
             this.setState({ 
-                languages: languages.slice(0, maxLanguages),
-                repos: repos.slice(0, maxRepos),
+                languages,
+                repos,
                 isLoadingRepos: false 
             });
-        }).catch(error => {console.error(error); this.setState({
+        }).catch(error => this.setState({
             error,
             isLoadingRepos: false
-        })});
+        }));
     }
 
     loadContributions(githubNick) {
         this.setState({ isLoadingContributions: true });
 
-        const processor = result => result.items.map(repo => ({
-            repositoryUrl: repo.repository_url,
-        }));
-
-        this.loadAllFromPagedResource(`${API}/search/issues?q=type:pr+is:merged+author:${githubNick}`, processor).then(contributionsData => {
-            console.log(contributionsData);
-            const contributionCountByRepoUrl = _.countBy(contributionsData, 'repositoryUrl');
-            const contributions = Object.keys(contributionCountByRepoUrl)
-                .reduce((agg, repo) => agg.concat({ repo, count: contributionCountByRepoUrl[repo] }), [])
-            console.log('contributions', contributions);
-            contributions.sort((a, b) => b.count - a.count );
-            console.log('contributionsSorted', contributions);
-            const contributionsMapped = contributions.map(con => {
-                const repoUrl = con.repo.replace(/https:\/\/api\.github\.com\/repos/, 'https://github.com');
-                const repoName = con.repo.replace(/https:\/\/api\.github\.com\/repos\//, '');
-                return { repoUrl, repoName, count: con.count, };
-            });
-            console.log('contributionsMApped', contributionsMapped);
+        fetchContributions(githubNick).then(contributions => {
             this.setState({ 
-                contributions: contributionsMapped,
+                contributions,
                 isLoadingContributions: false 
             });
-        }).catch(error => { console.error('contribytion error', error); this.setState({
+        }).catch(error => this.setState({
             error,
             isLoadingContributions: false
-        })});
-    }
-
-    loadAllFromPagedResource(url, processor) {
-        console.log('loading from ' + url);
-        const loadChunkRecursivly = (pageNumber=1, aggregator=[]) => 
-            axios.get(`${url}${url.indexOf('?') > -1 ? '&' : '?'}per_page=100&page=${pageNumber}`)
-            .then(result => { 
-                const res = processor ? processor(result.data) : result.data;
-                if (result.data.length === 100) {
-                    return loadChunkRecursivly(pageNumber + 1, aggregator.concat(res));
-                } else {
-                    return aggregator.concat(res);
-                }
-            });
-        return loadChunkRecursivly();
-    }
-
-    userSinceDescription(user) {
-        var sinceDate = new Date(user.created_at);
-        const sinceYear = sinceDate.getFullYear();
-        const sinceMonth = sinceDate.getMonth();
-        const earlyAdopter = (sinceYear === 2008 && sinceMonth <= 5) || since <= '2007';
-        return `On GitHub
-            ${earlyAdopter ? ' as an early adopter ': ' '}
-            since ${sinceYear} `;
+        }));
     }
 
     userReposDesc(user, githubNick) {
-        if (user.public_repos > 0) {
-            return <a href={`https://github.com/${githubNick}?tab=repositories`}>{`${user.public_repos} public repositor${user.public_repos > 1 ? 'ies' : 'y'}`}</a>
+        if (user.publicRepos > 0) {
+            return <a href={`https://github.com/${githubNick}?tab=repositories`}>{`${user.publicRepos} public repositor${user.publicRepos > 1 ? 'ies' : 'y'}`}</a>
         } 
         return ' without any public repository for now ';
     }
@@ -179,21 +90,18 @@ class Resume extends React.Component {
 
     render() {
         const { githubNick } = this.props;
-        const { user, isLoading, languages, isLoadingRepos, repos, contributions, organizations } = this.state;
+        const { user, isLoading, languages, repos, contributions, organizations } = this.state;
         if (isLoading) {
             return <div>Loading ...</div>;
         }
 
-        const name = user.name || githubNick;
-        const website = user.blog && `${user.blog.indexOf('http') > -1 ? '' : 'http://'}${user.blog}`
-
         return (
             <Flex flexDirection="column" alignItems="center" justifyContent="center">
                 <Box width={1/2} px={2}>
-                    <h1>{ name }</h1>
+                    <h1>{ user.name }</h1>
                     <h2>
-                    { this.userSinceDescription(user) }
-                    { name } is a developer 
+                    { `On GitHub ${user.earlyAdopter ? ' as an early adopter ': ' '} since ${user.sinceYear} ` }
+                    { user.name } is a developer 
                     { user.location ? [' based in', <span>{user.location}</span> ] : ' ' }
                      with 
                     { ' ' }
@@ -206,7 +114,7 @@ class Resume extends React.Component {
                             <h2>Website</h2>
                         </div>
                         <div id="content-website">
-                            <a href={website} id="mywebsite" title={`${githubNick}'s website`}>{website}</a>
+                            <a href={user.website} id="mywebsite" title={`${githubNick}'s website`}>{user.website}</a>
                         </div>
                     </div>}
 
@@ -277,9 +185,9 @@ class Resume extends React.Component {
                 </Box>
                 <footer>
                     <p>
-                        {name + ' - '}
+                        { user.name + ' - '}
                         { user.email && [<a href={`mailto:${user.email}`}>{ user.email }</a>,  ' - '] } 
-                        { website && [<a href={website} title={`${name}'s website`}>{website}</a>, ' - '] } 
+                        { user.website && [<a href={user.website} title={`${user.name}'s website`}>{user.website}</a>, ' - '] } 
                         <a href={`https://github.com/${githubNick}`} title="GitHub profile" class="url">{`https://github.com/${githubNick}`}</a>
                     </p>
                 </footer>
