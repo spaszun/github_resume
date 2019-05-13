@@ -7,8 +7,8 @@ const Button = styled.button`
   margin: 0.5rem 1rem;
   width: 11rem;
   background: transparent;
-  color: black;
-  border: 2px solid black;
+  color: ${({ disabled }) => (disabled ? "#DCDAD1" : "black")};
+  border: ${({ disabled }) => `2px solid ${disabled ? "#DCDAD1" : "black"}`};
 `;
 
 export default Button;

@@ -9,16 +9,17 @@ export const InputLabel = styled.label`
   margin-bottom: 10px;
 `;
 
+const red = theme => Color(theme.colorRed).toString();
+
 export const Input = styled.input`
   display: inline-block;
-  border-radius: 3px;
   padding: 0.5rem 0;
-  margin: 0.5rem 1rem;
+  border-radius: 3px;
   width: 20rem;
   background: transparent;
   color: black;
-  border: 2px solid black;
-  &:focus { 
+  border: ${({ theme, error }) => `2px solid ${error ? red(theme) : "black"}`};
+  &:focus {
     outline: none;
   }
 `;
@@ -29,12 +30,9 @@ export const Description = styled.div`
   color: ${({ theme }) => theme.colorGray};
 `;
 
-export const Error = styled.div`
-  margin-top: 10px;
-  color: ${({ theme }) =>
-    Color(theme.colorRed)
-      .lighten(0.2)
-      .toString()};
+export const FieldError = styled.div`
+  margin-top: 1px;
+  color: ${({ theme }) => red(theme)};
   text-align: ${({ textAlign }) => textAlign};
 `;
 
@@ -49,9 +47,8 @@ export const FieldWrapper = ({
     {label && <InputLabel>{`${label}:`}</InputLabel>}
     {children}
     {description && <Description>{description}</Description>}
-    {touched && error && <Error>{error}</Error>}
+    {touched && error && <FieldError>{error}</FieldError>}
   </div>
 );
-
 
 export { default as InputField } from "./Input";

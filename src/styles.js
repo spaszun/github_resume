@@ -1,9 +1,9 @@
-import { injectGlobal } from "styled-components";
-import theme from "config/theme";
+import { createGlobalStyle } from "styled-components";
+import theme from "./config/theme";
 
 import "normalize.css";
 
-injectGlobal`
+export const GlobalStyle = createGlobalStyle`
 
     html {
         font-size: ${theme.htmlFontSize};

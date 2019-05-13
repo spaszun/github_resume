@@ -14,6 +14,8 @@ import { Profile } from "../../components/Profile";
 import { Website } from "../../components/Website";
 import { Footer } from "../../components/Footer";
 import { ResumeRow } from "../../components/ResumeRow";
+import Error from "../../components/Error";
+import { Link } from "react-router-dom";
 
 class Resume extends React.Component {
   constructor(props) {
@@ -32,13 +34,39 @@ class Resume extends React.Component {
       errorUser: null,
       errorRepos: null,
       errorOrgs: null,
-      errorContributions: null
+      errorContributions: null,
+      isFatalError: false,
+      fatalErrorCode: false
     };
+  }
+
+  handleErrors(error) {
+    const { history } = this.props;
+    const isFatalError = true;
+    const githubNick = this.getGithubNick();
+    let fatalError;
+    if (error.response.status === 403) {
+      fatalError = {
+        title: "Api Limit reached",
+        message: "Please try again later"
+      };
+    } else if (error.response.status === 404) {
+      fatalError = {
+        title: "User not Found",
+        message: `User "${githubNick}" not found on github.`
+      };
+    } else {
+      fatalError = {
+        title: "Uknown error happened",
+        message: "Please try again later"
+      };
+    }
+    this.setState({ isFatalError, fatalError });
   }
 
   componentDidMount() {
     this.setState({ isLoadingUser: true });
-    const { githubNick } = this.props;
+    const githubNick = this.getGithubNick();
     fetchUser(githubNick)
       .then(result => {
         this.setState({
@@ -46,13 +74,28 @@ class Resume extends React.Component {
           isLoadingUser: false
         });
       })
-      .catch(errorUser =>
+      .then(() => this.loadRest(githubNick))
+      .catch(errorUser => {
+        this.handleErrors(errorUser);
         this.setState({
           errorUser,
           isLoadingUser: false
-        })
-      );
+        });
+      });
+  }
 
+  getGithubNick() {
+    const { githubNick } = this.props.match.params;
+    return githubNick;
+  }
+
+  loadRest(githubNick) {
+    this.loadOrgs(githubNick);
+    this.loadRepositoriesAndLanguages(githubNick);
+    this.loadContributions(githubNick);
+  }
+
+  loadOrgs(githubNick) {
     this.setState({ isLoadingOrgs: true });
     fetchOrgs(githubNick)
       .then(organizations =>
@@ -67,9 +110,6 @@ class Resume extends React.Component {
           isLoadingOrgs: false
         })
       );
-
-    this.loadRepositoriesAndLanguages(githubNick);
-    this.loadContributions(githubNick);
   }
 
   loadRepositoriesAndLanguages(githubNick) {
@@ -109,7 +149,7 @@ class Resume extends React.Component {
   }
 
   render() {
-    const { githubNick } = this.props;
+    const { githubNick } = this.props.match.params;
     const {
       user,
       isLoadingUser,
@@ -121,9 +161,6 @@ class Resume extends React.Component {
       isLoadingRepos,
       isLoadingOrgs
     } = this.state;
-    if (isLoadingUser) {
-      return <div>Loading ...</div>;
-    }
 
     const errors = () => {
       const {
@@ -136,47 +173,64 @@ class Resume extends React.Component {
         errorContributions || errorOrgs || errorRepos || errorUser;
       return (
         isError && (
-          <React.Fragment>
-            {errorContributions && <div>{errorContributions}</div>}
-            {errorOrgs && <div>{errorOrgs}</div>}
-            {errorRepos && <div>{errorRepos}</div>}
-            {errorUser && <div>{errorUser}</div>}
-          </React.Fragment>
+          <div>
+            {errorContributions && (
+              <div>{errorContributions.response.data.message}</div>
+            )}
+            {errorOrgs && <div>{errorOrgs.response.data.message}</div>}
+            {errorRepos && <div>{errorRepos.response.data.message}</div>}
+            {errorUser && <div>{errorUser.response.data.message}</div>}
+          </div>
         )
       );
     };
 
+    if (isLoadingUser) {
+      return <div>Loading ...</div>;
+    }
+
+    if (this.state.isFatalError) {
+      const { fatalError } = this.state;
+      return <Error title={fatalError.title} message={fatalError.message} />;
+    }
+
     return (
-      <Flex flexDirection="column" alignItems="center" justifyContent="center">
-        {errors()}
-        <Box width={1 / 2} px={2}>
-          <h1>{user.name}</h1>
-          <ResumeRow title="Github Profile">
-            <Profile user={user} githubNick={githubNick} />
-          </ResumeRow>
-          {user.website && (
-            <ResumeRow title="Website">
-              <Website website={user.website} githubNick={githubNick} />
+      <React.Fragment>
+        <Flex
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+        >
+          {errors()}
+          <Box width={1 / 2} px={2}>
+            <h1>{user.name}</h1>
+            <ResumeRow title="Github Profile">
+              <Profile user={user} githubNick={githubNick} />
             </ResumeRow>
-          )}
-          <ResumeRow title="Languages" isLoading={isLoadingRepos}>
-            <Languages languages={languages} />
-          </ResumeRow>
-          <ResumeRow title="Repositories" isLoading={isLoadingRepos}>
-            <Repositories repositories={repos} githubNick={githubNick} />
-          </ResumeRow>
-          <ResumeRow title="Contributions" isLoading={isLoadingContributions}>
-            <Contributions
-              contributions={contributions}
-              githubNick={githubNick}
-            />
-          </ResumeRow>
-          <ResumeRow title="Organizations" isLoading={isLoadingOrgs}>
-            <Organizations organizations={organizations} />
-          </ResumeRow>
-        </Box>
-        <Footer user={user} />
-      </Flex>
+            {user.website && (
+              <ResumeRow title="Website">
+                <Website website={user.website} githubNick={githubNick} />
+              </ResumeRow>
+            )}
+            <ResumeRow title="Languages" isLoading={isLoadingRepos}>
+              <Languages languages={languages} />
+            </ResumeRow>
+            <ResumeRow title="Repositories" isLoading={isLoadingRepos}>
+              <Repositories repositories={repos} githubNick={githubNick} />
+            </ResumeRow>
+            <ResumeRow title="Contributions" isLoading={isLoadingContributions}>
+              <Contributions
+                contributions={contributions}
+                githubNick={githubNick}
+              />
+            </ResumeRow>
+            <ResumeRow title="Organizations" isLoading={isLoadingOrgs}>
+              <Organizations organizations={organizations} />
+            </ResumeRow>
+          </Box>
+          <Footer user={user} githubNick={githubNick} />
+        </Flex>
+      </React.Fragment>
     );
   }
 }

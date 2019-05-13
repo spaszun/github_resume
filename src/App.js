@@ -1,12 +1,8 @@
-import React from 'react';
-import Home from './containers/Home';
+import React from "react";
+import AppRouter from "./components/AppRouter";
 
 function App() {
-  return (
-    <div className="App">
-      <Home/>
-    </div>
-  );
+  return <AppRouter />;
 }
 
 export default App;

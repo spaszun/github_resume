@@ -19,7 +19,13 @@ const InputField = props => {
       touched={touched}
       error={error}
     >
-      <Input {...rest} {...input} type={type} placeholder={placeholder} />
+      <Input
+        {...rest}
+        {...input}
+        type={type}
+        placeholder={placeholder}
+        error={touched && error}
+      />
     </FieldWrapper>
   );
 };
