@@ -1,5 +1,6 @@
 import React from "react";
 import { Flex, Box } from "@rebass/grid";
+import { Link } from "react-router-dom";
 import {
   fetchRepositoriesAndLanguages,
   fetchContributions,
@@ -15,7 +16,6 @@ import { Website } from "../../components/Website";
 import { Footer } from "../../components/Footer";
 import { ResumeRow } from "../../components/ResumeRow";
 import Error from "../../components/Error";
-import { Link } from "react-router-dom";
 
 class Resume extends React.Component {
   constructor(props) {
@@ -57,7 +57,7 @@ class Resume extends React.Component {
       };
     } else {
       fatalError = {
-        title: "Uknown error happened",
+        title: "Unknown error happened",
         message: "Please try again later"
       };
     }
@@ -90,14 +90,16 @@ class Resume extends React.Component {
   }
 
   loadRest(githubNick) {
-    this.loadOrgs(githubNick);
-    this.loadRepositoriesAndLanguages(githubNick);
-    this.loadContributions(githubNick);
+    return Promise.all([
+      this.loadOrgs(githubNick),
+      this.loadRepositoriesAndLanguages(githubNick),
+      this.loadContributions(githubNick)
+    ]);
   }
 
   loadOrgs(githubNick) {
     this.setState({ isLoadingOrgs: true });
-    fetchOrgs(githubNick)
+    return fetchOrgs(githubNick)
       .then(organizations =>
         this.setState({
           organizations,
@@ -114,7 +116,7 @@ class Resume extends React.Component {
 
   loadRepositoriesAndLanguages(githubNick) {
     this.setState({ isLoadingRepos: true });
-    fetchRepositoriesAndLanguages(githubNick)
+    return fetchRepositoriesAndLanguages(githubNick)
       .then(([languages, repos]) => {
         this.setState({
           languages,
@@ -133,7 +135,7 @@ class Resume extends React.Component {
   loadContributions(githubNick) {
     this.setState({ isLoadingContributions: true });
 
-    fetchContributions(githubNick)
+    return fetchContributions(githubNick)
       .then(contributions => {
         this.setState({
           contributions,
@@ -159,29 +161,26 @@ class Resume extends React.Component {
       organizations,
       isLoadingContributions,
       isLoadingRepos,
-      isLoadingOrgs
+      isLoadingOrgs,
+      isFatalError,
+      fatalError
     } = this.state;
 
-    const errors = () => {
-      const {
-        errorContributions,
-        errorOrgs,
-        errorRepos,
-        errorUser
-      } = this.state;
-      const isError =
-        errorContributions || errorOrgs || errorRepos || errorUser;
-      return (
-        isError && (
-          <div>
-            {errorContributions && (
-              <div>{errorContributions.response.data.message}</div>
-            )}
-            {errorOrgs && <div>{errorOrgs.response.data.message}</div>}
-            {errorRepos && <div>{errorRepos.response.data.message}</div>}
-            {errorUser && <div>{errorUser.response.data.message}</div>}
+    const minorErrors = () => {
+      const { errorContributions, errorOrgs, errorRepos } = this.state;
+      const minorErrorsArray = [errorContributions, errorOrgs, errorRepos];
+      const mapErrors = (error, idx) =>
+        error && (
+          <div key={idx} className="minorError">
+            {error.response.data.message}
           </div>
-        )
+        );
+      return (
+        <React.Fragment>
+          {minorErrorsArray.some(e => e) && (
+            <div>{minorErrorsArray.map(mapErrors)}</div>
+          )}
+        </React.Fragment>
       );
     };
 
@@ -189,8 +188,7 @@ class Resume extends React.Component {
       return <div>Loading ...</div>;
     }
 
-    if (this.state.isFatalError) {
-      const { fatalError } = this.state;
+    if (isFatalError) {
       return <Error title={fatalError.title} message={fatalError.message} />;
     }
 
@@ -201,7 +199,8 @@ class Resume extends React.Component {
           alignItems="center"
           justifyContent="center"
         >
-          {errors()}
+          {minorErrors()}
+
           <Box width={1 / 2} px={2}>
             <h1>{user.name}</h1>
             <ResumeRow title="Github Profile">

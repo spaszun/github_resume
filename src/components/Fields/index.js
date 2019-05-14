@@ -47,7 +47,7 @@ export const FieldWrapper = ({
     {label && <InputLabel>{`${label}:`}</InputLabel>}
     {children}
     {description && <Description>{description}</Description>}
-    {touched && error && <FieldError>{error}</FieldError>}
+    {touched && error && <FieldError className="error">{error}</FieldError>}
   </div>
 );
 

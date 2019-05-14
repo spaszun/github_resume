@@ -61,7 +61,7 @@ class Home extends React.Component {
         <Button
           type="button"
           onClick={() => this.createResume()}
-          disabled={!this.state.meta.touched || this.state.meta.error}
+          disabled={!this.state.meta.touched || !!this.state.meta.error}
           primary
         >
           Create resume

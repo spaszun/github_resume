@@ -14,19 +14,21 @@ export const Profile = ({ user, githubNick }) => {
 
   const userFollowersDesc = () => {
     if (user.followers > 0) {
-      return [
-        " and ",
-        <a href={`https://github.com/${githubNick}/followers`}>{`${
-          user.followers
-        } follower${user.followers > 1 ? "s" : ""}`}</a>
-      ];
+      return (
+        <React.Fragment>
+          and{" "}
+          <a href={`https://github.com/${githubNick}/followers`}>{`${
+            user.followers
+          } follower${user.followers > 1 ? "s" : ""}`}</a>
+        </React.Fragment>
+      );
     }
     return "";
   };
 
   return (
     <React.Fragment>
-      {`On GitHub ${user.earlyAdopter ? " as an early adopter " : " "} since ${
+      {`On GitHub${user.earlyAdopter ? " as an early adopter " : " "}since ${
         user.sinceYear
       } `}
       {user.name} is a developer{" "}

@@ -3,7 +3,7 @@ import React from "react";
 export const Organizations = ({ organizations }) => (
   <React.Fragment>
     {organizations.map(o => (
-      <div>
+      <div key={o.name}>
         <h2>{o.name}</h2>
         <h3>Member</h3>
         <h4>{o.now}</h4>
