@@ -23,15 +23,17 @@ const AppRouter = () => (
   >
     <Box pt={2}>
       <Flex alignItems="center" justifyContent="center">
-        <Link to="/">Home</Link>
+        <Link to="/">Create another resume</Link>
       </Flex>
     </Box>
     <Box py={5} width={1}>
-      <Switch>
-        <Route exact path={ROOT_PATH} component={Home} />
-        <Route path={RESUME_PATH} component={Resume} />
-        <Route component={NotFound} />
-      </Switch>
+      <Flex alignItems="center" justifyContent="center">
+        <Switch>
+          <Route exact path={ROOT_PATH} component={Home} />
+          <Route path={RESUME_PATH} component={Resume} />
+          <Route component={NotFound} />
+        </Switch>
+      </Flex>
     </Box>
   </Flex>
 );

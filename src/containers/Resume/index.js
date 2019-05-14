@@ -171,7 +171,7 @@ class Resume extends React.Component {
         { key: "contributions", error: errorContributions },
         { key: "organizations", error: errorOrgs },
         { key: "repositories and lanuages", error: errorRepos }
-      ];
+      ].filter(e => e.error);
       const mapErrors = (error, idx) =>
         error && (
           <div key={idx} className="minorError">
@@ -181,9 +181,7 @@ class Resume extends React.Component {
       return (
         <React.Fragment>
           {minorErrorsArray.some(e => e.error) && (
-            <FieldError>
-              {minorErrorsArray.filter(e => e.error).map(mapErrors)}
-            </FieldError>
+            <FieldError>{minorErrorsArray.map(mapErrors)}</FieldError>
           )}
         </React.Fragment>
       );

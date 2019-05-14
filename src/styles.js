@@ -23,6 +23,7 @@ export const GlobalStyle = createGlobalStyle`
 
     body {
         font-family: ${theme.fontFamily};
+        backgroud-color: #fafafa;
     }
 
     a {

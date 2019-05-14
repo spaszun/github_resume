@@ -5,7 +5,7 @@ const Button = styled.button`
   border-radius: 3px;
   padding: 0.5rem 0;
   margin: 0.5rem 1rem;
-  width: 11rem;
+  width: 20rem;
   background: transparent;
   color: ${({ disabled }) => (disabled ? "#DCDAD1" : "black")};
   border: ${({ disabled }) => `2px solid ${disabled ? "#DCDAD1" : "black"}`};
