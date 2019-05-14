@@ -1,6 +1,5 @@
 import React from "react";
-import { Route, Switch, Link } from "react-router-dom";
-import { Flex, Box } from "@rebass/grid";
+import { Route, Switch } from "react-router-dom";
 import Error from "../Error";
 import { RESUME_PATH, ROOT_PATH } from "../../config/routes";
 import Resume from "../../containers/Resume";
@@ -15,27 +14,11 @@ const NotFound = props => (
 );
 
 const AppRouter = () => (
-  <Flex
-    height={1}
-    flexDirection="column"
-    alignItems="center"
-    justifyContent="center"
-  >
-    <Box pt={2}>
-      <Flex alignItems="center" justifyContent="center">
-        <Link to="/">Create another resume</Link>
-      </Flex>
-    </Box>
-    <Box py={5} width={1}>
-      <Flex alignItems="center" justifyContent="center">
-        <Switch>
-          <Route exact path={ROOT_PATH} component={Home} />
-          <Route path={RESUME_PATH} component={Resume} />
-          <Route component={NotFound} />
-        </Switch>
-      </Flex>
-    </Box>
-  </Flex>
+  <Switch>
+    <Route exact path={ROOT_PATH} component={Home} />
+    <Route path={RESUME_PATH} component={Resume} />
+    <Route component={NotFound} />
+  </Switch>
 );
 
 export default AppRouter;

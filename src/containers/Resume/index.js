@@ -1,5 +1,6 @@
 import React from "react";
 import { Flex, Box } from "@rebass/grid";
+import { Link } from "react-router-dom";
 import { FieldError } from "../../components/Fields";
 import {
   fetchRepositoriesAndLanguages,
@@ -44,12 +45,12 @@ class Resume extends React.Component {
     const isFatalError = true;
     const githubNick = this.getGithubNick();
     let fatalError;
-    if (error.respone && error.response.status === 403) {
+    if (error.response && error.response.status === 403) {
       fatalError = {
         title: "Api Limit reached",
         message: "Please try again later"
       };
-    } else if (error.respone && error.response.status === 404) {
+    } else if (error.response && error.response.status === 404) {
       fatalError = {
         title: "User not Found",
         message: `User "${githubNick}" not found on github.`
@@ -197,6 +198,11 @@ class Resume extends React.Component {
 
     return (
       <React.Fragment>
+        <Box pt={2}>
+          <Flex alignItems="center" justifyContent="center">
+            <Link to="/">Create another resume</Link>
+          </Flex>
+        </Box>
         <Flex
           flexDirection="column"
           alignItems="center"

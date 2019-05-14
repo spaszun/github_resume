@@ -3,6 +3,7 @@ import { shallow, mount } from "enzyme";
 import sinon from "sinon";
 import Resume from "./";
 import * as service from "../../service/service";
+import { BrowserRouter as Router } from "react-router-dom";
 
 const repositories = [
   {
@@ -84,7 +85,9 @@ describe("Resume", () => {
     service.fetchOrgs.resolves(organizations);
 
     const wrapper = await mount(
-      <Resume match={{ params: { githubNick: "defunkt" } }} />
+      <Router>
+        <Resume match={{ params: { githubNick: "whatever" } }} />
+      </Router>
     );
     await waitForAsync();
     wrapper.update();
@@ -98,8 +101,10 @@ describe("Resume", () => {
   it("When user method does not run correctly", async () => {
     service.fetchUser.rejects({ response: { status: 404 } });
 
-    const wrapper = await shallow(
-      <Resume match={{ params: { githubNick: "defunkt" } }} />
+    const wrapper = await mount(
+      <Router>
+        <Resume match={{ params: { githubNick: "whatever" } }} />
+      </Router>
     );
     await waitForAsync();
     wrapper.update();
@@ -116,7 +121,9 @@ describe("Resume", () => {
     service.fetchOrgs.rejects({ response: { data: { message: "error" } } });
 
     const wrapper = await mount(
-      <Resume match={{ params: { githubNick: "defunkt" } }} />
+      <Router>
+        <Resume match={{ params: { githubNick: "whatever" } }} />
+      </Router>
     );
     await waitForAsync();
     wrapper.update();
