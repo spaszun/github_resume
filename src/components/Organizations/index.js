@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export const Organizations = ({ organizations }) => (
   <React.Fragment>
@@ -17,3 +18,7 @@ export const Organizations = ({ organizations }) => (
     ))}
   </React.Fragment>
 );
+
+Organizations.propTypes = {
+  organizations: PropTypes.array.isRequired
+};

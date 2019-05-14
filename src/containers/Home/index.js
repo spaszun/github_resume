@@ -1,8 +1,7 @@
 import React from "react";
 import { withRouter } from "react-router-dom";
 import { InputField, Button } from "./../../components";
-import { Flex, Box } from "@rebass/grid";
-import Resume from "../Resume";
+import { Flex } from "@rebass/grid";
 
 const GITHUB_USERNAME_REGEX = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 

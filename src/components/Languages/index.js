@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export const Languages = ({ languages }) => (
   <React.Fragment>
@@ -11,3 +12,7 @@ export const Languages = ({ languages }) => (
     </ul>
   </React.Fragment>
 );
+
+Languages.propTypes = {
+  languages: PropTypes.array.isRequired
+};

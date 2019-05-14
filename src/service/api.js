@@ -1,5 +1,4 @@
 import axios from "axios";
-import { repositoryMapper, contributionsMapper } from "./mapper";
 
 const loadAllFromPagedResource = (url, extractor) => {
   const loadChunkRecursivly = (pageNumber = 1, aggregator = []) =>
@@ -23,14 +22,12 @@ const loadAllFromPagedResource = (url, extractor) => {
 const API = "https://api.github.com";
 
 export const loadRepositories = githubNick =>
-  loadAllFromPagedResource(`${API}/users/${githubNick}/repos`, data =>
-    data.map(repositoryMapper)
-  );
+  loadAllFromPagedResource(`${API}/users/${githubNick}/repos`);
 
 export const loadContributions = githubNick =>
   loadAllFromPagedResource(
     `${API}/search/issues?q=type:pr+is:merged+author:${githubNick}`,
-    data => data.items.map(contributionsMapper)
+    data => data.items
   );
 
 export const loadUser = githubNick =>

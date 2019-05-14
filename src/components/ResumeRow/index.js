@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export const ResumeRow = ({ title, children, isLoading }) => {
   const withLoading = children => {
@@ -15,4 +16,10 @@ export const ResumeRow = ({ title, children, isLoading }) => {
       <div>{withLoading(children)}</div>
     </div>
   );
+};
+
+ResumeRow.propTypes = {
+  title: PropTypes.string.isRequired,
+  children: PropTypes.element.isRequired,
+  isLoading: PropTypes.bool
 };

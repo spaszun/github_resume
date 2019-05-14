@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export const Repositories = ({ repositories, githubNick }) => (
   <React.Fragment>
@@ -25,3 +26,8 @@ export const Repositories = ({ repositories, githubNick }) => (
     ))}
   </React.Fragment>
 );
+
+Repositories.propTypes = {
+  repositories: PropTypes.array.isRequired,
+  githubNick: PropTypes.string.isRequired
+};

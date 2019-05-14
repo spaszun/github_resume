@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export const Website = ({ website, githubNick }) => (
   <React.Fragment>
@@ -7,3 +8,8 @@ export const Website = ({ website, githubNick }) => (
     </a>
   </React.Fragment>
 );
+
+Website.propTypes = {
+  website: PropTypes.string.isRequired,
+  githubNick: PropTypes.string.isRequired
+};

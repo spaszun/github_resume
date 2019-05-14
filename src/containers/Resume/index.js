@@ -1,6 +1,6 @@
 import React from "react";
 import { Flex, Box } from "@rebass/grid";
-import { Link } from "react-router-dom";
+import { FieldError } from "../../components/Fields";
 import {
   fetchRepositoriesAndLanguages,
   fetchContributions,
@@ -41,16 +41,15 @@ class Resume extends React.Component {
   }
 
   handleErrors(error) {
-    const { history } = this.props;
     const isFatalError = true;
     const githubNick = this.getGithubNick();
     let fatalError;
-    if (error.response.status === 403) {
+    if (error.respone && error.response.status === 403) {
       fatalError = {
         title: "Api Limit reached",
         message: "Please try again later"
       };
-    } else if (error.response.status === 404) {
+    } else if (error.respone && error.response.status === 404) {
       fatalError = {
         title: "User not Found",
         message: `User "${githubNick}" not found on github.`
@@ -90,7 +89,7 @@ class Resume extends React.Component {
   }
 
   loadRest(githubNick) {
-    return Promise.all([
+    Promise.all([
       this.loadOrgs(githubNick),
       this.loadRepositoriesAndLanguages(githubNick),
       this.loadContributions(githubNick)
@@ -168,17 +167,23 @@ class Resume extends React.Component {
 
     const minorErrors = () => {
       const { errorContributions, errorOrgs, errorRepos } = this.state;
-      const minorErrorsArray = [errorContributions, errorOrgs, errorRepos];
+      const minorErrorsArray = [
+        { key: "contributions", error: errorContributions },
+        { key: "organizations", error: errorOrgs },
+        { key: "repositories and lanuages", error: errorRepos }
+      ];
       const mapErrors = (error, idx) =>
         error && (
           <div key={idx} className="minorError">
-            {error.response.data.message}
+            {`Problems with loading ${error.key}`}
           </div>
         );
       return (
         <React.Fragment>
-          {minorErrorsArray.some(e => e) && (
-            <div>{minorErrorsArray.map(mapErrors)}</div>
+          {minorErrorsArray.some(e => e.error) && (
+            <FieldError>
+              {minorErrorsArray.filter(e => e.error).map(mapErrors)}
+            </FieldError>
           )}
         </React.Fragment>
       );

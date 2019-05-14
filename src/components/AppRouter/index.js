@@ -26,7 +26,7 @@ const AppRouter = () => (
         <Link to="/">Home</Link>
       </Flex>
     </Box>
-    <Box py={5}>
+    <Box py={5} width={1}>
       <Switch>
         <Route exact path={ROOT_PATH} component={Home} />
         <Route path={RESUME_PATH} component={Resume} />

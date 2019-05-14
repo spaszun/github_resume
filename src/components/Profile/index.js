@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export const Profile = ({ user, githubNick }) => {
   const userReposDesc = () => {
@@ -40,4 +41,9 @@ export const Profile = ({ user, githubNick }) => {
       with {userReposDesc()} {userFollowersDesc()}
     </React.Fragment>
   );
+};
+
+Profile.propTypes = {
+  user: PropTypes.object.isRequired,
+  githubNick: PropTypes.string.isRequired
 };
